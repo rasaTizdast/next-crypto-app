@@ -7,7 +7,7 @@ import GlareHoverButton from "@/components/GlareHover";
 export default function Home() {
   return (
     <div className="relative min-h-screen w-full">
-      <div className="absolute inset-0 z-0 blur-xs">
+      <div className="absolute inset-0 z-0">
         <Dither
           waveColor={[0.15, 0.39, 0.5]}
           disableAnimation={false}
@@ -15,9 +15,10 @@ export default function Home() {
           waveAmplitude={0.45}
           waveFrequency={2.7}
           waveSpeed={0.02}
+          enableMouseInteraction={false}
         />
       </div>
-      <div className="relative z-10 mx-auto flex min-h-screen w-full flex-col items-center justify-center gap-5 pt-30 sm:max-w-10/12">
+      <div className="relative mx-auto flex min-h-screen w-full flex-col items-center justify-center gap-5 pt-30 sm:max-w-10/12">
         <AnimateContent>
           <h1 className="text-center text-3xl leading-normal font-black sm:text-4xl md:text-5xl lg:text-7xl">
             آنالیز قیمت های ارز دیجیتال و <br />
