@@ -1,15 +1,24 @@
 "use client";
 
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 const Header = () => {
   return (
     <header className="fixed top-5 z-10 mx-auto mt-5 flex w-full max-w-11/12 items-center justify-start rounded-[12px] border border-gray-100 bg-gray-100/25 p-3 text-xs text-gray-100 backdrop-blur-xl sm:max-w-10/12 md:text-base">
-      <Link href="/" className="text-xl font-extrabold">
-        Sefro Crypto
+      <Link href="/" className="mr-2 transition duration-300 hover:invert">
+        <Image
+          src="/favicon.ico"
+          alt="Sefro logo"
+          width={30}
+          height={30}
+          quality={100}
+          className="transition-all"
+        />
       </Link>
+
       <span className="mx-5 hidden items-center text-2xl font-extralight sm:flex">|</span>
       <NavUl />
       <HeaderActions />
@@ -36,7 +45,7 @@ const NavUl = () => {
       {navList.map((item) => (
         <li
           key={item.href}
-          className="cursor-pointer font-semibold transition-all hover:text-blue-500"
+          className="cursor-pointer font-semibold transition-all hover:text-blue-300"
         >
           <Link href={item.href}>{item.name}</Link>
         </li>
