@@ -6,6 +6,17 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
+  images: {
+    qualities: [90, 100],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "coin-images.coingecko.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
