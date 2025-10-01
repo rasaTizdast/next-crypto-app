@@ -7,8 +7,6 @@ export const GetCryptoList = async ({ page = 1 }: { page: number }): Promise<Aut
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crypto/prices/latest/?page=${page}&page_size=25`,
       "GET"
     );
-
-    console.log(response);
     return response;
   } catch (error) {
     console.error(error);
