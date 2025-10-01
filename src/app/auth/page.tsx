@@ -43,7 +43,7 @@ const AuthPage: React.FC = () => {
     if (mode === "login") {
       const result = await login({ username_or_email, password });
       if (!result.success) {
-        setError(result.error || "ورود ناموفق بود");
+        setError("ورود ناموفق بود");
         return;
       }
       router.push("/"); // Redirect to home after successful login
@@ -51,7 +51,7 @@ const AuthPage: React.FC = () => {
       const username = formData.get("username") as string;
       const result = await signup({ username, email, password });
       if (!result.success) {
-        setError(result.error || "ثبت نام ناموفق بود");
+        setError("ثبت نام ناموفق بود");
         return;
       }
       setShowOTP(true);
