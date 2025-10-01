@@ -13,9 +13,7 @@ interface Props {
 const CoinsTableRow = ({ item, historyMap }: Props) => {
   const symbol = (item.symbol ?? "").toString();
   const price = Number(item.price_usd ?? item.price ?? 0);
-  const change24 = Number(
-    item.price_change_percentage_24h ?? item.change_24h ?? item.percent_change_24h ?? 0
-  );
+  const change24 = Number(item.change_24h_percent);
   const marketCap = Number(item.market_cap_usd ?? item.market_cap ?? 0);
   const name = item.name ?? symbol;
   const image = item.logo_url;

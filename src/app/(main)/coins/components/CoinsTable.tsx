@@ -17,6 +17,7 @@ const CoinsTable = () => {
   const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
 
   const pageSize = 25;
+  const REFRESH_MS = 60000; // background refresh interval
 
   const loadData = async (newPage: number) => {
     try {
@@ -51,6 +52,33 @@ const CoinsTable = () => {
 
   useEffect(() => {
     loadData(page);
+  }, [page]);
+
+  // Background auto-refresh without interrupting UI
+  useEffect(() => {
+    const id = setInterval(() => {
+      const refreshData = async () => {
+        try {
+          // Do not toggle loading; keep current UI responsive
+          const res = await GetCryptoList({ page });
+          const data = (res as any)?.data ?? {};
+          const items: any[] = data.results ?? data.items ?? data.data ?? [];
+          setCoins(items);
+
+          // Update total pages if it changed (won't clear history)
+          const count = typeof data.count === "number" ? data.count : undefined;
+          if (typeof count === "number") {
+            setTotalPages(Math.max(1, Math.ceil(count / pageSize)));
+          } else if (typeof data.total_pages === "number") {
+            setTotalPages(data.total_pages);
+          }
+        } catch (e) {
+          console.warn("[CoinsTable] Background refresh failed", e);
+        }
+      };
+      refreshData();
+    }, REFRESH_MS);
+    return () => clearInterval(id);
   }, [page]);
 
   // Stream per-row 7d history after coins list is loaded
