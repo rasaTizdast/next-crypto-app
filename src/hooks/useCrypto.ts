@@ -2,7 +2,12 @@
 
 import { useQuery, useQueries } from "@tanstack/react-query";
 
-import { GetCryptoHistory7d, GetCryptoList } from "@/app/services/crypto";
+import {
+  GetCryptoHistory7d,
+  GetCryptoList,
+  GetCoinDetails,
+  GetCoinHistory,
+} from "@/app/services/crypto";
 
 // Types for better type safety
 interface CryptoListParams {
@@ -20,6 +25,10 @@ export const cryptoKeys = {
   list: (page: number) => [...cryptoKeys.lists(), page] as const,
   histories: () => [...cryptoKeys.all, "history"] as const,
   history: (symbols: string[]) => [...cryptoKeys.histories(), symbols.sort().join(",")] as const,
+  details: () => [...cryptoKeys.all, "details"] as const,
+  detail: (symbol: string) => [...cryptoKeys.details(), symbol.toUpperCase()] as const,
+  coinHistory: (symbol: string, interval: string) =>
+    [...cryptoKeys.histories(), symbol.toUpperCase(), interval] as const,
 };
 
 // Hook for fetching crypto list with pagination
@@ -93,6 +102,42 @@ export function useCryptoHistories(symbols: string[]) {
       // Don't retry individual history requests as aggressively
       retry: 1,
     })),
+  });
+}
+
+// Hook for fetching single coin details
+export function useCoinDetails(symbol: string) {
+  return useQuery({
+    queryKey: cryptoKeys.detail(symbol),
+    queryFn: async () => {
+      const response = await GetCoinDetails(symbol);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch coin details");
+      }
+      return response;
+    },
+    enabled: !!symbol,
+    // Refetch every 30 seconds for real-time price updates
+    refetchInterval: 30 * 1000,
+    staleTime: 15 * 1000, // Consider data stale after 15 seconds
+  });
+}
+
+// Hook for fetching coin price history with custom interval
+export function useCoinHistory(symbol: string, interval: string = "7d", limit: number = 8) {
+  return useQuery({
+    queryKey: cryptoKeys.coinHistory(symbol, interval),
+    queryFn: async () => {
+      const response = await GetCoinHistory(symbol, interval, limit);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to fetch coin history");
+      }
+      return response;
+    },
+    enabled: !!symbol,
+    // Cache history data longer since it changes less frequently
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 5 * 60 * 1000, // 5 minutes
   });
 }
 

@@ -13,7 +13,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
             // Stale time: how long data is considered fresh
             staleTime: 30 * 1000, // 30 seconds
             // Cache time: how long data stays in cache after component unmounts
-            gcTime: 60 * 1000, // 5 minutes
+            gcTime: 60 * 1000, // 1 minute
             // Retry failed requests
             retry: (failureCount, error: any) => {
               // Don't retry on 4xx errors except 401 (handled by refresh logic)

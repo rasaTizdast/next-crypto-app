@@ -26,7 +26,7 @@ const CoinsTableRow = ({ item, historyMap }: Props) => {
       <td className="whitespace-nowrap">
         <Link
           prefetch
-          href={`/crypto/${symbol.toLowerCase()}`}
+          href={`/coins/${symbol.toLowerCase()}`}
           className="flex items-center gap-x-3 px-8 py-3"
         >
           <Image
