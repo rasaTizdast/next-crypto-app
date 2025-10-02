@@ -28,7 +28,7 @@ export default function Home() {
         ref={(el) => registerSection(el, 0)}
         className="relative flex min-h-screen w-full items-center justify-center"
       >
-        {/* Content Container - Now FIRST in DOM order */}
+        {/* Content Container */}
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center justify-center gap-5 px-3">
           <AnimateContent>
             <h1 className="text-center text-3xl leading-normal font-black md:text-5xl lg:text-6xl xl:text-7xl">
