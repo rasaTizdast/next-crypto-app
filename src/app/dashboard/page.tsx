@@ -94,34 +94,18 @@ export default function Dashboard() {
                   <label className="mb-1 block text-sm font-medium text-gray-400">ایمیل</label>
                   <p className="text-white">{user.email}</p>
                 </div>
-                {user.first_name && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-400">نام</label>
-                    <p className="text-white">{user.first_name}</p>
-                  </div>
-                )}
-                {user.last_name && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-400">
-                      نام خانوادگی
-                    </label>
-                    <p className="text-white">{user.last_name}</p>
-                  </div>
-                )}
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-400">نقش کاربری</label>
+                  <p className={`${user.is_staff ? "text-red-400" : "text-gray-400"}`}>
+                    {user.is_staff ? "مدیر" : "کاربر عادی"}
+                  </p>
+                </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-400">
                     وضعیت اشتراک
                   </label>
                   <p className={`${user.is_premium ? "text-green-400" : "text-gray-400"}`}>
                     {user.is_premium ? "پریمیوم" : "رایگان"}
-                  </p>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-400">
-                    تاریخ عضویت
-                  </label>
-                  <p className="text-white">
-                    {new Date(user.date_joined).toLocaleDateString("fa-IR")}
                   </p>
                 </div>
                 {user.is_premium && user.premium_expires_at && (
@@ -144,6 +128,29 @@ export default function Dashboard() {
               <p className="text-gray-400">اطلاعات کاربری در دسترس نیست</p>
             )}
           </div>
+
+          {/* Admin Panel - Only visible to staff */}
+          {user?.is_staff && (
+            <div className="mb-8 rounded-lg border border-red-500/30 bg-gradient-to-br from-red-600/20 to-red-700/20 p-6">
+              <div className="mb-4 flex items-center">
+                <span className="ml-2 text-lg">🛡️</span>
+                <h2 className="text-xl font-semibold text-red-400">پنل مدیریت</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Link
+                  href="/admin"
+                  className="rounded-lg bg-red-600/20 p-4 transition-colors hover:bg-red-600/30"
+                >
+                  <h3 className="mb-2 font-semibold text-red-300">مدیریت کاربران</h3>
+                  <p className="text-sm text-gray-400">مشاهده و مدیریت کاربران سیستم</p>
+                </Link>
+                <div className="rounded-lg bg-red-600/20 p-4">
+                  <h3 className="mb-2 font-semibold text-red-300">آمار سیستم</h3>
+                  <p className="text-sm text-gray-400">مشاهده آمار کلی سیستم</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">

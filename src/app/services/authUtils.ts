@@ -180,3 +180,60 @@ export const requirePremiumAccess = async (): Promise<{
     user: premiumCheck.user,
   };
 };
+
+/**
+ * Utility function to check if user has admin/staff permissions
+ */
+export const checkAdminAccess = async (): Promise<{
+  isAdmin: boolean;
+  user?: UserProfile;
+}> => {
+  try {
+    const authState = await getAuthState();
+
+    if (!authState.isAuthenticated || !authState.user) {
+      return { isAdmin: false };
+    }
+
+    return {
+      isAdmin: authState.user.is_staff,
+      user: authState.user,
+    };
+  } catch (error) {
+    console.error("Error checking admin access:", error);
+    return { isAdmin: false };
+  }
+};
+
+/**
+ * Utility function to require admin access for admin-only features
+ */
+export const requireAdminAccess = async (): Promise<{
+  hasAccess: boolean;
+  user?: UserProfile;
+  redirectTo?: string;
+}> => {
+  const adminCheck = await checkAdminAccess();
+
+  if (!adminCheck.isAdmin) {
+    const authState = await getAuthState();
+
+    if (!authState.isAuthenticated) {
+      return {
+        hasAccess: false,
+        redirectTo: "/auth",
+      };
+    }
+
+    return {
+      hasAccess: false,
+      user: adminCheck.user,
+      redirectTo: "/dashboard", // Redirect to dashboard - no admin access
+    };
+  }
+
+  return {
+    hasAccess: true,
+    user: adminCheck.user,
+  };
+};

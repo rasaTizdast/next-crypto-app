@@ -103,11 +103,37 @@ const NavUl = () => {
 };
 
 const HeaderActions = ({ onSearchToggle }: { onSearchToggle: () => void }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { checkAuth } = useAuthCheck();
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const isAuth = await checkAuth();
+      setIsAuthenticated(isAuth);
+    };
+
+    checkAuthStatus();
+  }, [checkAuth]);
+
+  // Show loading state while checking authentication
+  if (isAuthenticated === null) {
+    return (
+      <div className="mr-auto flex gap-3">
+        <div className="flex cursor-pointer items-center rounded-lg bg-gray-700 px-4 py-1 text-xs font-semibold text-gray-400 md:text-sm">
+          بارگذاری...
+        </div>
+        <span className="mx-0.5 flex items-center text-2xl font-extralight">|</span>
+        <MagnifyingGlassIcon
+          className="size-6 cursor-pointer text-white md:size-7"
+          onClick={onSearchToggle}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mr-auto flex gap-3">
-      {!checkAuth() ? (
+      {!isAuthenticated ? (
         <Link
           href="/auth"
           className="flex cursor-pointer items-center rounded-lg bg-gray-900 px-4 py-1 text-xs font-semibold text-white transition-all hover:bg-neutral-950 md:text-sm"
