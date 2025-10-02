@@ -1,7 +1,7 @@
 // Define the shape of the expected server response
 
 import { http } from "./http";
-import { AuthResponse } from "./types";
+import { AuthResponse, UserProfile, HttpResponse } from "./types";
 
 interface LoginCredentials {
   username_or_email: string;
@@ -136,6 +136,30 @@ export const logout = async (): Promise<AuthResponse> => {
       status: 400,
       success: false,
       error: "خروج با شکست مواجه شد!",
+    };
+  }
+};
+
+export const getUserProfile = async (): Promise<HttpResponse & { user?: UserProfile }> => {
+  try {
+    const response = await http(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/profile/`,
+      "GET"
+    );
+
+    if (response.success && response.data) {
+      return {
+        ...response,
+        user: response.data as UserProfile,
+      };
+    }
+
+    return response;
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: "دریافت اطلاعات کاربر با شکست مواجه شد!",
     };
   }
 };
