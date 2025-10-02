@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { useAuthCheck } from "@/app/services/authUtils";
+
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -101,14 +103,23 @@ const NavUl = () => {
 };
 
 const HeaderActions = ({ onSearchToggle }: { onSearchToggle: () => void }) => {
+  const { checkAuth } = useAuthCheck();
+
   return (
     <div className="mr-auto flex gap-3">
-      {true && (
+      {!checkAuth() ? (
         <Link
           href="/auth"
           className="flex cursor-pointer items-center rounded-lg bg-gray-900 px-4 py-1 text-xs font-semibold text-white transition-all hover:bg-neutral-950 md:text-sm"
         >
           ورود / ثبت نام
+        </Link>
+      ) : (
+        <Link
+          href="/dashboard"
+          className="flex cursor-pointer items-center rounded-lg bg-gray-900 px-4 py-1 text-xs font-semibold text-white transition-all hover:bg-neutral-950 md:text-sm"
+        >
+          داشبورد
         </Link>
       )}
       <span className="mx-0.5 flex items-center text-2xl font-extralight">|</span>
