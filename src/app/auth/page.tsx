@@ -46,7 +46,7 @@ const AuthPage: React.FC = () => {
         setError("ورود ناموفق بود");
         return;
       }
-      router.push("/"); // Redirect to home after successful login
+      router.push("/dashboard"); // Redirect to dashboard after successful login
     } else {
       const username = formData.get("username") as string;
       const result = await signup({ username, email, password });
