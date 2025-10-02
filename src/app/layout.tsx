@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
 
+import QueryProvider from "@/components/QueryProvider";
+
 import "./globals.css";
 
 const geistSans = Vazirmatn({
@@ -20,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={`${geistSans.variable} bg-gray-950 text-blue-50`}>{children}</body>
+      <body className={`${geistSans.variable} bg-gray-950 text-blue-50`}>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }
