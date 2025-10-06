@@ -61,7 +61,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-950 text-blue-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-3xl font-bold">داشبورد کاربری</h1>
@@ -152,63 +152,31 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Main Links */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Link
               href="/coins"
               className="rounded-lg bg-gray-800 p-6 transition-colors hover:bg-gray-700"
             >
-              <h3 className="mb-2 text-lg font-semibold">قیمت ارزها</h3>
-              <p className="text-gray-400">مشاهده قیمت‌های لحظه‌ای ارزهای دیجیتال</p>
+              <h3 className="mb-2 text-lg font-semibold">کریپتو</h3>
+              <p className="text-gray-400">قیمت‌ها و بازار ارزهای دیجیتال</p>
             </Link>
 
-            <div
+            <Link
+              href="/smart-advisor"
               className={`rounded-lg p-6 ${user?.is_premium ? "border border-purple-500/30 bg-gradient-to-br from-purple-600/20 to-purple-700/20" : "bg-gray-800"}`}
             >
               <div className="mb-2 flex items-center">
-                {user?.is_premium && <span className="mr-2 text-lg">📊</span>}
-                <h3 className="text-lg font-semibold">تحلیل‌های پیشرفته</h3>
+                {user?.is_premium && <span className="mr-2 text-lg">🤖</span>}
+                <h3 className="text-lg font-semibold">اسمارت ادوایزر</h3>
               </div>
-              <p className="text-gray-400">تحلیل‌های عمیق و هوشمند بازار</p>
-              {user?.is_premium ? (
-                <span className="mt-2 block text-sm text-purple-400">
-                  ویژه کاربران پریمیوم - به زودی...
+              <p className="text-gray-400">تحلیل و پیشنهادات هوشمند بازار</p>
+              {!user?.is_premium && (
+                <span className="mt-2 block text-sm text-gray-500">
+                  دسترسی فقط برای کاربران پریمیوم
                 </span>
-              ) : (
-                <div className="mt-3">
-                  <span className="mb-2 block text-sm text-gray-500">
-                    تحلیل‌های پیشرفته فقط برای کاربران پریمیوم
-                  </span>
-                  <button className="rounded bg-purple-600 px-3 py-1 text-sm text-white transition-colors hover:bg-purple-700">
-                    ارتقا به پریمیوم
-                  </button>
-                </div>
               )}
-            </div>
-
-            <div
-              className={`rounded-lg p-6 ${user?.is_premium ? "border border-yellow-500/30 bg-gradient-to-br from-yellow-600/20 to-yellow-700/20" : "bg-gray-800"}`}
-            >
-              <div className="mb-2 flex items-center">
-                {user?.is_premium && <span className="mr-2 text-lg">👑</span>}
-                <h3 className="text-lg font-semibold">پورتفولیو</h3>
-              </div>
-              <p className="text-gray-400">مدیریت دارایی‌های دیجیتال شما</p>
-              {user?.is_premium ? (
-                <span className="mt-2 block text-sm text-yellow-400">
-                  ویژه کاربران پریمیوم - به زودی...
-                </span>
-              ) : (
-                <div className="mt-3">
-                  <span className="mb-2 block text-sm text-gray-500">
-                    برای دسترسی به این بخش نیاز به اشتراک پریمیوم دارید
-                  </span>
-                  <button className="rounded bg-yellow-600 px-3 py-1 text-sm text-white transition-colors hover:bg-yellow-700">
-                    ارتقا به پریمیوم
-                  </button>
-                </div>
-              )}
-            </div>
+            </Link>
           </div>
 
           {/* Premium Upgrade Section */}
