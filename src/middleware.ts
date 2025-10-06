@@ -126,6 +126,11 @@ export async function middleware(request: NextRequest) {
     const hasAccess = await hasValidTokens(cookies);
 
     if (hasAccess) {
+      // If user is admin, redirect them away from dashboard to admin panel
+      const isAdmin = await isUserAdmin(cookies);
+      if (isAdmin) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
       return NextResponse.next();
     }
 
@@ -134,6 +139,11 @@ export async function middleware(request: NextRequest) {
 
     if (hasRefresh) {
       // Let the client-side handle the token refresh
+      // But if they are admin, still redirect them to /admin
+      const isAdmin = await isUserAdmin(cookies);
+      if (isAdmin) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
       return NextResponse.next();
     }
 
