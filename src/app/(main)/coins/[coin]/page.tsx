@@ -69,13 +69,26 @@ const CoinPage = ({ params }: CoinPageProps) => {
   }
 
   const coin: CoinDetails = coinData.data.results[0];
-  const historyPoints = historyData?.data?.[0]?.points || [];
+  // Be resilient to different API shapes
+  const historyPoints = (() => {
+    const hd: any = historyData;
+    if (!hd) return [] as any[];
+    if (Array.isArray(hd?.data?.results)) return hd.data.results[0]?.points || [];
+    if (Array.isArray(hd?.results)) return hd.results[0]?.points || [];
+    if (Array.isArray(hd?.data)) return hd.data[0]?.points || [];
+    if (Array.isArray(hd?.data?.points)) return hd.data.points || [];
+    if (Array.isArray(hd?.points)) return hd.points || [];
+    return [] as any[];
+  })();
 
   // Process history data for chart
-  const chartData = historyPoints.map(([timestamp, price]: [string, number]) => ({
-    timestamp: new Date(timestamp).getTime(),
-    price: Number(price),
-  }));
+  const chartData = historyPoints
+    .map(([timestamp, price]: [string, number]) => ({
+      timestamp: new Date(timestamp).getTime(),
+      price: Number(price),
+    }))
+    // Ensure chronological order in case backend returns unsorted
+    .sort((a: { timestamp: number }, b: { timestamp: number }) => a.timestamp - b.timestamp);
 
   const price = Number(coin.price_usd);
   const change24h = Number(coin.change_24h_percent);

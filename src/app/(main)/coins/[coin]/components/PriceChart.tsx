@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 
 interface ChartDataPoint {
   timestamp: number;
@@ -23,6 +23,23 @@ interface TooltipData {
 }
 
 const PriceChart = ({ data, isPositive }: PriceChartProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number }>({ width: 800, height: 300 });
+
+  // Observe container size to keep SVG responsive without distortion
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const element = containerRef.current;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const width = Math.max(300, Math.floor(entry.contentRect.width));
+      const height = Math.max(200, Math.floor(entry.contentRect.height));
+      setSize({ width, height });
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const [tooltip, setTooltip] = useState<TooltipData>({
     x: 0,
     y: 0,
@@ -33,9 +50,17 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
     visible: false,
   });
 
-  // Sort data by timestamp to ensure left-to-right chronological order
+  // Normalize to chronological ascending order (oldest -> newest)
   const sortedData = useMemo(() => {
-    return [...data].sort((a, b) => a.timestamp - b.timestamp);
+    if (!data || data.length === 0) return [] as ChartDataPoint[];
+    // Defensive copy and numeric sort by timestamp
+    const ordered = [...data].sort((a, b) => a.timestamp - b.timestamp);
+    // If timestamps are equal or sort failed due to identical values, fallback by index order
+    // and ensure newest ends up at the end (left-to-right oldest -> newest)
+    if (ordered.length > 1 && ordered[0].timestamp > ordered[ordered.length - 1].timestamp) {
+      ordered.reverse();
+    }
+    return ordered;
   }, [data]);
 
   const chartConfig = useMemo(() => {
@@ -64,9 +89,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
 
   const pathData = useMemo(() => {
     if (!sortedData.length || !chartConfig) return "";
-
-    const width = 800;
-    const height = 300;
+    const { width, height } = size;
 
     const points = sortedData.map((point, index) => {
       const x = (index / (sortedData.length - 1)) * width;
@@ -75,7 +98,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
     });
 
     return `M ${points.join(" L ")}`;
-  }, [sortedData, chartConfig]);
+  }, [sortedData, chartConfig, size]);
 
   const gradientId = `gradient-${isPositive ? "positive" : "negative"}`;
 
@@ -88,22 +111,23 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
       const mouseX = event.clientX - rect.left;
 
       // Convert mouse position to SVG coordinates
-      const svgX = (mouseX / rect.width) * 800;
+      const svgX = (mouseX / rect.width) * size.width;
 
       // Find the closest data point
-      const dataIndex = Math.round((svgX / 800) * (sortedData.length - 1));
+      const dataIndex = Math.round((svgX / size.width) * (sortedData.length - 1));
       const clampedIndex = Math.max(0, Math.min(sortedData.length - 1, dataIndex));
 
       const dataPoint = sortedData[clampedIndex];
       if (dataPoint) {
         // Calculate exact chart coordinates for the data point
-        const chartX = (clampedIndex / (sortedData.length - 1)) * 800;
+        const chartX = (clampedIndex / (sortedData.length - 1)) * size.width;
         const chartY =
-          300 - ((dataPoint.price - chartConfig.chartMin) / chartConfig.chartRange) * 300;
+          size.height -
+          ((dataPoint.price - chartConfig.chartMin) / chartConfig.chartRange) * size.height;
 
         // Convert back to screen coordinates for tooltip positioning
-        const screenX = (chartX / 800) * rect.width;
-        const screenY = (chartY / 300) * rect.height;
+        const screenX = (chartX / size.width) * rect.width;
+        const screenY = (chartY / size.height) * rect.height;
 
         setTooltip({
           x: screenX,
@@ -116,7 +140,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
         });
       }
     },
-    [sortedData, chartConfig]
+    [sortedData, chartConfig, size]
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -170,11 +194,11 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
   }
 
   return (
-    <div className="relative h-80 w-full">
+    <div ref={containerRef} className="relative h-80 w-full" dir="ltr">
       <svg
         width="100%"
         height="100%"
-        viewBox="0 0 800 300"
+        viewBox={`0 0 ${size.width} ${size.height}`}
         className="cursor-crosshair overflow-visible"
         preserveAspectRatio="xMidYMid meet"
         onMouseMove={handleMouseMove}
@@ -199,10 +223,13 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
             />
           </pattern>
         </defs>
-        <rect width="800" height="300" fill="url(#grid)" />
+        <rect width={size.width} height={size.height} fill="url(#grid)" />
 
         {/* Area under the curve */}
-        <path d={`${pathData} L 800,300 L 0,300 Z`} fill={`url(#${gradientId})`} />
+        <path
+          d={`${pathData} L ${size.width},${size.height} L 0,${size.height} Z`}
+          fill={`url(#${gradientId})`}
+        />
 
         {/* Price line */}
         <path
@@ -216,8 +243,10 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
 
         {/* Data points */}
         {sortedData.map((point, index) => {
-          const x = (index / (sortedData.length - 1)) * 800;
-          const y = 300 - ((point.price - chartConfig!.chartMin) / chartConfig!.chartRange) * 300;
+          const x = (index / (sortedData.length - 1)) * size.width;
+          const y =
+            size.height -
+            ((point.price - chartConfig!.chartMin) / chartConfig!.chartRange) * size.height;
 
           return (
             <circle
@@ -226,7 +255,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
               cy={y}
               r="4"
               fill={isPositive ? "#10b981" : "#ef4444"}
-              className="opacity-0 transition-opacity hover:opacity-100"
+              className="opacity-100"
               stroke="white"
               strokeWidth="2"
             />
@@ -240,7 +269,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
               x1={tooltip.chartX}
               y1="0"
               x2={tooltip.chartX}
-              y2="300"
+              y2={size.height}
               stroke="#6b7280"
               strokeWidth="1"
               strokeDasharray="4,4"
@@ -296,7 +325,7 @@ const PriceChart = ({ data, isPositive }: PriceChartProps) => {
       </div>
 
       {/* Time labels */}
-      <div className="mt-1 flex justify-between text-xs text-gray-400">
+      <div className="mt-1 flex justify-between text-xs text-gray-400" dir="ltr">
         {sortedData.length > 0 && (
           <>
             <span>{formatDay(sortedData[0].timestamp)}</span>
