@@ -4,7 +4,7 @@ import { AuthResponse } from "./types";
 export const GetCryptoList = async ({ page = 1 }: { page: number }): Promise<AuthResponse> => {
   try {
     const response = await http(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crypto/prices/latest/?page=${page}&page_size=25`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crypto/prices/latest/?page=${page}&page_size=10`,
       "GET"
     );
     return response;
