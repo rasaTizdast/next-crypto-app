@@ -3,23 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import SparklineChart from "./SparklineChart";
+import StaticChart from "./StaticChart";
 
 interface Props {
   item: any;
-  historyMap: Record<string, number[]>;
 }
 
-const CoinsTableRow = ({ item, historyMap }: Props) => {
+const CoinsTableRow = ({ item }: Props) => {
   const symbol = (item.symbol ?? "").toString();
   const price = Number(item.price_usd ?? item.price ?? 0);
   const change24 = Number(item.change_24h_percent);
   const marketCap = Number(item.market_cap_usd ?? item.market_cap ?? 0);
   const name = item.name ?? symbol;
   const image = item.logo_url;
-  const hist = historyMap[String(symbol).toUpperCase()] ?? [];
-  // Determine trend strictly from history when available; fall back to 24h change
-  const isUp = hist.length >= 2 ? hist[hist.length - 1] >= hist[0] : change24 >= 0;
+  // Determine trend based on 24h change
+  const isUp = change24 >= 0;
 
   return (
     <tr className="cursor-pointer hover:bg-gray-700">
@@ -60,13 +58,7 @@ const CoinsTableRow = ({ item, historyMap }: Props) => {
       </td>
       <td className="whitespace-nowrap">
         <Link prefetch href={`/crypto/${symbol.toLowerCase()}`} className="block px-8 py-4">
-          <div className="h-10 w-28">
-            {hist.length > 1 ? (
-              <SparklineChart values={hist} isUp={isUp} />
-            ) : (
-              <div className="h-full w-full rounded bg-gray-500" />
-            )}
-          </div>
+          <StaticChart isUp={isUp} />
         </Link>
       </td>
     </tr>

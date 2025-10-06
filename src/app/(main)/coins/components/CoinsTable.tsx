@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 
-import { useCryptoWithHistory } from "@/hooks/useCrypto";
+import { useCryptoList } from "@/hooks/useCrypto";
 import { useCryptoActions } from "@/hooks/useCryptoActions";
 
 import CoinsTableHeader from "./CoinsTableHeader";
@@ -12,10 +12,30 @@ import PaginationControls from "./PaginationControls";
 const CoinsTable = () => {
   const [page, setPage] = useState(1);
 
-  // Use React Query hook for all data fetching
-  const { coins, totalPages, loading, error, historyMap, isFetching } = useCryptoWithHistory({
+  // Use React Query hook for data fetching
+  const {
+    data: cryptoData,
+    isLoading: loading,
+    error,
+    isFetching,
+  } = useCryptoList({
     page,
   });
+
+  const coins = cryptoData?.data?.results || [];
+  const errorMessage = (error as any)?.message || null;
+  const totalPages = (() => {
+    const data = cryptoData?.data || {};
+    const count = typeof data.count === "number" ? data.count : undefined;
+    const pageSize = 25;
+
+    if (typeof count === "number") {
+      return Math.max(1, Math.ceil(count / pageSize));
+    } else if (typeof data.total_pages === "number") {
+      return data.total_pages;
+    }
+    return null;
+  })();
 
   const { prefetchCryptoList } = useCryptoActions();
   const pageSize = 25;
@@ -70,14 +90,14 @@ const CoinsTable = () => {
                   </td>
                 </tr>
               ))}
-            {!loading && error && (
+            {!loading && errorMessage && (
               <tr>
                 <td colSpan={5} className="px-8 py-6 text-center text-red-400">
-                  {error}
+                  {errorMessage}
                 </td>
               </tr>
             )}
-            {!loading && !error && coins.length === 0 && (
+            {!loading && !errorMessage && coins.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-8 py-6 text-center text-gray-400">
                   موردی یافت نشد
@@ -85,13 +105,9 @@ const CoinsTable = () => {
               </tr>
             )}
             {!loading &&
-              !error &&
+              !errorMessage &&
               coins.map((item: any, idx: number) => (
-                <CoinsTableRow
-                  item={item}
-                  historyMap={historyMap}
-                  key={`coin-${item?.id || item?.symbol || idx}`}
-                />
+                <CoinsTableRow item={item} key={`coin-${item?.id || item?.symbol || idx}`} />
               ))}
           </tbody>
         </table>
