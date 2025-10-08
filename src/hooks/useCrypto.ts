@@ -7,6 +7,7 @@ import {
   GetCryptoList,
   GetCoinDetails,
   GetCoinHistory,
+  SearchCoins,
 } from "@/app/services/crypto";
 
 // Types for better type safety
@@ -29,6 +30,8 @@ export const cryptoKeys = {
   detail: (symbol: string) => [...cryptoKeys.details(), symbol.toUpperCase()] as const,
   coinHistory: (symbol: string, interval: string) =>
     [...cryptoKeys.histories(), symbol.toUpperCase(), interval] as const,
+  search: () => [...cryptoKeys.all, "search"] as const,
+  searchQuery: (query: string) => [...cryptoKeys.search(), query.toLowerCase().trim()] as const,
 };
 
 // Hook for fetching crypto list with pagination
@@ -138,6 +141,25 @@ export function useCoinHistory(symbol: string, interval: string = "7d", limit: n
     // Cache history data longer since it changes less frequently
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchInterval: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+// Hook for searching coins
+export function useCoinSearch(query: string) {
+  return useQuery({
+    queryKey: cryptoKeys.searchQuery(query),
+    queryFn: async () => {
+      const response = await SearchCoins(query);
+      if (!response.success) {
+        throw new Error(response.error || "Failed to search coins");
+      }
+      return response;
+    },
+    enabled: query.trim().length > 0,
+    // Cache search results for a short time to avoid repeated requests
+    staleTime: 30 * 1000, // 30 seconds
+    // Don't refetch search results automatically
+    refetchInterval: false,
   });
 }
 

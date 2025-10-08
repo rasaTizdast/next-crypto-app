@@ -59,3 +59,22 @@ export const GetCoinHistory = async (
     return { success: false, error: "دریافت تاریخچه قیمت" };
   }
 };
+
+// Search coins by symbol (expects EN symbol like BTC)
+export const SearchCoins = async (query: string): Promise<AuthResponse> => {
+  try {
+    if (!query.trim()) {
+      return { success: true, data: { results: [] } };
+    }
+
+    const symbol = query.trim().toUpperCase();
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crypto/prices/latest/?symbols=${encodeURIComponent(
+      symbol
+    )}`;
+    const response = await http(url, "GET");
+    return response;
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "جستجوی ارز دیجیتال" };
+  }
+};

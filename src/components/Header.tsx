@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 
 import { useAuthCheck } from "@/app/services/authUtils";
 
+import SearchModal from "./SearchModal";
+
 const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -49,33 +51,7 @@ const Header = () => {
       </header>
 
       {/* SEARCH MODAL */}
-      {isSearchOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Blur background */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsSearchOpen(false)}
-          />
-
-          {/* Search box */}
-          <div className="relative z-10 w-11/12 max-w-md rounded-lg border border-gray-700 bg-gray-900 p-4 text-white shadow-lg">
-            <input
-              autoFocus
-              type="text"
-              placeholder="نام ارز خود را وارد کنید"
-              className="w-full rounded-md bg-gray-800 p-2 text-sm focus:outline-none sm:text-base"
-            />
-            <div className="mt-3">
-              {/* Example results */}
-              <ul className="space-y-2">
-                <li className="cursor-pointer rounded p-2 hover:bg-gray-800">بیت‌کوین</li>
-                <li className="cursor-pointer rounded p-2 hover:bg-gray-800">اتریوم</li>
-                <li className="cursor-pointer rounded p-2 hover:bg-gray-800">دوج‌کوین</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 };
