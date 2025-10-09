@@ -59,9 +59,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen w-full max-w-11/12 bg-gray-950 pt-5 text-blue-50 sm:max-w-10/12 sm:pt-10">
+      <div className="mt-19 w-full">
+        <div className="w-full">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-3xl font-bold">داشبورد کاربری</h1>
@@ -74,7 +74,7 @@ export default function Dashboard() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="rounded-lg bg-red-600 px-4 py-2 transition-colors hover:bg-red-700"
+                className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 transition-colors hover:bg-red-700"
               >
                 خروج
               </button>

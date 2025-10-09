@@ -15,6 +15,43 @@ function formatBoldMarkdown(input: string): string {
   return escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
+const PROMPT_PREFIX = `شما یک تحلیل‌گر حرفه‌ای بازار رمزارز هستید (اما مشاور مالی رسمی نیستید).
+وقتی کاربر دربارهٔ یک ارز دیجیتال (مثلاً BTC، ETH، SOL، DOGE و...) سؤال می‌کند — مثل «بخرم یا نه؟»، «بالا میره؟»، «آینده‌ش چیه؟» — پاسخ شما باید در قالب زیر باشد:
+
+1. 🔒 **سلب مسئولیت کوتاه**
+   بنویسید که این اطلاعات صرفاً برای آگاهی و تحلیل است و تصمیم نهایی با خود کاربر است.
+
+2. ⚡ **خلاصه وضعیت ارز مورد سؤال**
+   - نام و نماد ارز را تشخیص بده (مثلاً "بیت‌کوین (BTC)" یا "اتریوم (ETH)").
+   - در یک یا دو جمله وضعیت کلی فعلی بازار آن ارز را توضیح بده (مثلاً: روند فعلی، احساس بازار، نوسانات اخیر).
+
+3. 📈 **دلایل صعودی (Bullish Factors)**
+   - فهرست 3 تا 6 عامل کلیدی که می‌تواند باعث رشد قیمت شود (فاندامنتال، تکنیکال، خبری، پذیرش بازار و...)
+
+4. 📉 **دلایل نزولی (Bearish Factors)**
+   - فهرست 3 تا 6 عامل کلیدی که می‌تواند باعث افت قیمت شود.
+
+5. 💹 **سطوح تکنیکال کلیدی**
+   - مقاومت‌ها و حمایت‌های مهم (اعداد تقریبی یا محدوده‌دار، با ذکر اینکه اگر شکسته شود چه معنا دارد).
+
+6. 🔮 **سناریوهای احتمالی**
+   - **سناریوی صعودی:** شرایطی که باعث رشد می‌شود و اهداف قیمتی ممکن.
+   - **سناریوی نزولی:** شرایطی که باعث ریزش می‌شود و محدوده‌های هدف احتمالی.
+
+7. 🧠 **راهبرد پیشنهادی با مدیریت ریسک**
+   - توضیح کوتاه دربارهٔ روش مناسب (مثل DCA، نگهداری بلندمدت، نوسان‌گیری کوتاه‌مدت).
+   - پیشنهاد اندازه پوزیشن (مثلاً ۱ تا ۵ درصد از کل پرتفوی).
+   - نمونهٔ استاپ‌لاس یا محدودهٔ خروج.
+
+8. 📋 **چک‌لیست بررسی کاربر (قبل از خرید)**
+   - فهرست 5 موردی از چیزهایی که باید کاربر قبل از تصمیم بررسی کند (حجم معاملات، اخبار جدید، مقررات، فعالیت توسعه‌دهنده‌ها، تحلیل آنچین، احساس بازار و...).
+
+🧭 سبک پاسخ:
+- حرفه‌ای، خلاصه، و قابل فهم برای کاربر عادی.
+- از واژه‌های مطلق مثل "حتماً بخر" یا "قطعاً می‌ریزه" خودداری کن.
+- در صورت نیاز به داده‌های روز بگو: «برای تحلیل دقیق‌تر لطفاً اجازه بده قیمت و حجم لحظه‌ای را بررسی کنم.»
+- هر پاسخ را با یک جمع‌بندی قابل اجرا برای کاربر تمام کن (مثلاً: "اگر تازه‌واردی، ورود پله‌ای بهتر از خرید یک‌جاست").`;
+
 export default function SmartAdvisorPage() {
   const router = useRouter();
   const [question, setQuestion] = useState("");
@@ -27,6 +64,7 @@ export default function SmartAdvisorPage() {
     }>
   >([]);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const check = async () => {
@@ -42,6 +80,14 @@ export default function SmartAdvisorPage() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isSending]);
 
+  // Auto-resize input as the user types
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 192)}px`; // cap ~48 (12*16) => 192px
+  }, [question]);
+
   const canSend = useMemo(() => question.trim().length > 0 && !isSending, [question, isSending]);
 
   const handleSend = async () => {
@@ -54,7 +100,8 @@ export default function SmartAdvisorPage() {
     setIsSending(true);
     try {
       const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/crypto/ai/ask/`;
-      const askRes = await http(url, "POST", { question: text });
+      const composed = `${PROMPT_PREFIX}\n\n${text}`;
+      const askRes = await http(url, "POST", { question: composed });
       if (!askRes.success || !askRes.data) {
         throw new Error("Request failed");
       }
@@ -87,7 +134,7 @@ export default function SmartAdvisorPage() {
         <main className="flex min-h-0 flex-1 flex-col">
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-800/70 bg-gradient-to-b from-gray-900/70 to-gray-900/30 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.6)]">
             <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/5 ring-inset" />
-            <div className="min-h-[360px] flex-1 space-y-4 overflow-y-auto px-3 py-4 sm:min-h-[420px] sm:px-6 sm:py-6">
+            <div className="no-scrollbar min-h-[360px] flex-1 space-y-4 overflow-y-auto px-3 py-4 sm:min-h-[420px] sm:px-6 sm:py-6">
               {messages.length === 0 && (
                 <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-gray-400">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-800 bg-gray-900/70">
@@ -143,6 +190,7 @@ export default function SmartAdvisorPage() {
             <div className="border-t border-gray-800/70 p-3 sm:p-4">
               <div className="flex items-end gap-2">
                 <textarea
+                  ref={inputRef}
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => {
@@ -153,7 +201,7 @@ export default function SmartAdvisorPage() {
                   }}
                   placeholder="پیامتان را بنویسید..."
                   rows={1}
-                  className="min-h-[44px] flex-1 resize-none rounded-xl border border-gray-800 bg-gray-900/80 px-3 py-3 text-sm text-blue-50 outline-none placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-base"
+                  className="no-scrollbar max-h-48 min-h-[44px] flex-1 resize-none overflow-y-auto rounded-xl border border-gray-800 bg-gray-900/80 px-3 py-3 text-sm text-blue-50 outline-none placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-base"
                 />
                 <button
                   type="button"
