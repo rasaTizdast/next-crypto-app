@@ -1,6 +1,6 @@
 // Define the shape of the expected server response
 
-import { http } from "./http";
+import { http, ensureCsrf, getCsrfTokenFromCookie } from "./http";
 import { AuthResponse, UserProfile, HttpResponse } from "./types";
 
 interface LoginCredentials {
@@ -23,21 +23,35 @@ export const login = async ({
   password,
 }: LoginCredentials): Promise<AuthResponse> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login/`, {
+    const csrfToken = (await ensureCsrf()) || getCsrfTokenFromCookie();
+    const requestBody = { username_or_email, password };
+    const requestUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/login/`;
+
+    const requestHeaders = {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    };
+
+    const response = await fetch(requestUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username_or_email, password }),
-      credentials: "include", // Include cookies for session management
+      headers: requestHeaders,
+      body: JSON.stringify(requestBody),
+      credentials: "include",
     });
+
     const data = await response.json();
 
     // Treat non-2xx responses as failures
     if (!response.ok) {
+      const errorMessage =
+        (data && (data.error || data.detail || data.message)) ||
+        "نام کاربری یا رمز عبور نادرست است";
+
       return {
         success: false,
-        error:
-          (data && (data.error || data.detail || data.message)) ||
-          "نام کاربری یا رمز عبور نادرست است",
+        error: errorMessage,
+        status: response.status,
+        responseData: data,
       };
     }
 
@@ -55,16 +69,27 @@ export const signup = async ({
   password,
 }: SignupCredentials): Promise<AuthResponse> => {
   try {
+    const csrfToken = (await ensureCsrf()) || getCsrfTokenFromCookie();
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/register/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
       body: JSON.stringify({ username, email, password }),
+      credentials: "include",
     });
 
     const data: AuthResponse = await response.json();
 
-    // Return server response directly
-    return { ...data, success: true };
+    // Check if the response was successful
+    if (response.ok) {
+      return { ...data, success: true };
+    } else {
+      return {
+        success: false,
+        error: data.detail || data.error || "ثبت نام ناموفق بود",
+        status: response.status,
+        responseData: data,
+      };
+    }
   } catch (error) {
     console.error(error);
     return {
@@ -76,14 +101,17 @@ export const signup = async ({
 
 export const verifyEmail = async ({ code }: VerifyEmailCredentials) => {
   try {
+    const csrfToken = (await ensureCsrf()) || getCsrfTokenFromCookie();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/auth/verify-email/`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Ensure the server knows the body is JSON
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
         },
         body: JSON.stringify({ code }),
+        credentials: "include",
       }
     );
 
@@ -106,10 +134,8 @@ export const verifyEmail = async ({ code }: VerifyEmailCredentials) => {
 
 export const refreshToken = async (): Promise<AuthResponse> => {
   try {
-    const response = await http(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/refresh/`,
-      "POST"
-    );
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://sefrocrypto.liara.run";
+    const response = await http(`${apiBaseUrl}/api/users/token/refresh/`, "POST");
 
     return { ...response, success: true };
   } catch (error) {
@@ -142,10 +168,9 @@ export const logout = async (): Promise<AuthResponse> => {
 
 export const getUserProfile = async (): Promise<HttpResponse & { user?: UserProfile }> => {
   try {
-    const response = await http(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/profile/`,
-      "GET"
-    );
+    const profileUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/profile/`;
+
+    const response = await http(profileUrl, "GET");
 
     if (response.success && response.data) {
       return {
