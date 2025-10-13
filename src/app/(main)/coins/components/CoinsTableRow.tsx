@@ -28,12 +28,16 @@ const CoinsTableRow = ({ item }: Props) => {
           className="flex items-center gap-x-3 px-8 py-3"
         >
           <Image
-            width={100}
-            height={100}
-            quality={100}
+            width={40}
+            height={40}
+            quality={75}
             alt={name}
-            src={image}
+            src={image || "/placeholder-coin.svg"}
             className="h-10 w-10 rounded-full"
+            unoptimized={true}
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder-coin.svg";
+            }}
           />
           <div>
             <span className="block text-sm font-medium text-gray-100">{name}</span>
@@ -42,22 +46,22 @@ const CoinsTableRow = ({ item }: Props) => {
         </Link>
       </td>
       <td className="whitespace-nowrap">
-        <Link prefetch href={`/crypto/${symbol.toLowerCase()}`} className="block px-8 py-4">
+        <Link prefetch href={`/coins/${symbol.toLowerCase()}`} className="block px-8 py-4">
           {price.toLocaleString("en-US", { style: "currency", currency: "USD" })}
         </Link>
       </td>
       <td className={`whitespace-nowrap ${change24 > 0 ? "text-green-400" : "text-red-400"}`}>
-        <Link prefetch href={`/crypto/${symbol.toLowerCase()}`} className="block px-8 py-4">
+        <Link prefetch href={`/coins/${symbol.toLowerCase()}`} className="block px-8 py-4">
           {`${change24} %`}
         </Link>
       </td>
       <td className="whitespace-nowrap">
-        <Link prefetch href={`/crypto/${symbol.toLowerCase()}`} className="block px-8 py-4">
+        <Link prefetch href={`/coins/${symbol.toLowerCase()}`} className="block px-8 py-4">
           {marketCap.toLocaleString("en-US", { style: "currency", currency: "USD" })}
         </Link>
       </td>
       <td className="whitespace-nowrap">
-        <Link prefetch href={`/crypto/${symbol.toLowerCase()}`} className="block px-8 py-4">
+        <Link prefetch href={`/coins/${symbol.toLowerCase()}`} className="block px-8 py-4">
           <StaticChart isUp={isUp} />
         </Link>
       </td>
