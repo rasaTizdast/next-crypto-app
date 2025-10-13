@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     qualities: [90, 100],
+    formats: ["image/webp", "image/avif"],
     remotePatterns: [
       {
         protocol: "https",
@@ -16,6 +17,8 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
