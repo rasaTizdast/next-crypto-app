@@ -61,7 +61,7 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 h-full w-full">
           <Dither
             waveColor={[0.15, 0.39, 0.5]}
-            disableAnimation={false}
+            disableAnimation={typeof window !== "undefined" && window.innerWidth < 768}
             colorNum={40}
             waveAmplitude={0.45}
             waveFrequency={2.7}
