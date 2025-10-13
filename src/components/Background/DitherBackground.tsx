@@ -3,7 +3,7 @@
 import { Canvas, useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import { EffectComposer, wrapEffect } from "@react-three/postprocessing";
 import { Effect } from "postprocessing";
-import { useRef, useEffect, forwardRef } from "react";
+import { useRef, useEffect, forwardRef, useState } from "react";
 import * as THREE from "three";
 
 const waveVertexShader = `
@@ -312,12 +312,45 @@ export default function Dither({
   enableMouseInteraction = true,
   mouseRadius = 1,
 }: DitherProps) {
+  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 2;
+
+  const handleError = () => {
+    if (retryCount < maxRetries) {
+      setRetryCount((prev) => prev + 1);
+      setHasError(false);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
+        <div className="text-center text-white">
+          <div className="mb-4 text-4xl">🌊</div>
+          <div className="text-sm opacity-75">Background unavailable</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Canvas
       className="relative h-full w-full"
       camera={{ position: [0, 0, 6] }}
       dpr={1}
-      gl={{ antialias: true, preserveDrawingBuffer: true }}
+      gl={{
+        antialias: false,
+        preserveDrawingBuffer: false,
+        powerPreference: "low-power",
+        failIfMajorPerformanceCaveat: true,
+        alpha: false,
+        depth: false,
+        stencil: false,
+      }}
+      onError={handleError}
     >
       <DitheredWaves
         waveSpeed={waveSpeed}
